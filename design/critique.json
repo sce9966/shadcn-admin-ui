@@ -1,0 +1,11 @@
+{
+  "kind": "critique-panel",
+  "score": 4,
+  "axes": {
+    "clarity": { "score": 4, "notes": "壳层改为各页静态 HTML，导航跳转后侧栏/顶栏仍可见" },
+    "hierarchy": { "score": 4, "notes": "侧栏 + 顶栏 + 内容区结构在三页保持一致" },
+    "typography": { "score": 4, "notes": "沿用 Shadcn Geist / Fira Code" },
+    "motion": { "score": 4, "notes": "主题与下拉仍由 layout.js 增强，无多余动效" },
+    "brand": { "score": 4, "notes": "Shadcn token 与 8px 圆角未改" }
+  }
+}

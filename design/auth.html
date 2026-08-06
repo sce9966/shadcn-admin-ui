@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>登录 / 注册 · 星枢 NovaOps</title>
+  <link rel="stylesheet" href="css/admin.css" />
+  <style>
+    .auth-canvas {
+      display: grid;
+      grid-template-columns: 1fr 520px;
+      width: 100%;
+      height: 100%;
+    }
+    .auth-visual {
+      position: relative;
+      background:
+        linear-gradient(160deg,
+          color-mix(in oklab, var(--fg), transparent 96%) 0%,
+          var(--bg) 48%,
+          color-mix(in oklab, var(--fg), transparent 97%) 100%);
+      border-right: 1px solid var(--border);
+      padding: 64px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .auth-visual .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .auth-visual h1 {
+      font-size: 48px;
+      font-weight: 600;
+      max-width: 12ch;
+      margin-bottom: 20px;
+    }
+    .auth-visual .lead {
+      font-size: var(--text-lg);
+      color: var(--muted);
+      max-width: 36ch;
+      line-height: 1.5;
+    }
+    .visual-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+    .visual-meta .k {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .visual-meta .v {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .auth-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 56px 64px;
+      background: var(--bg);
+    }
+    .auth-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      padding: 4px;
+      background: color-mix(in oklab, var(--fg), transparent 96%);
+      border-radius: var(--radius-md);
+      margin-bottom: 28px;
+    }
+    .tab {
+      height: 36px;
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .tab.is-active {
+      background: var(--surface);
+      color: var(--fg);
+      box-shadow: var(--elev-raised);
+    }
+    .tab:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .form-title {
+      font-size: var(--text-xl);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .form-sub {
+      color: var(--muted);
+      font-size: var(--text-sm);
+      margin-bottom: 28px;
+    }
+    .form-stack { display: flex; flex-direction: column; gap: 16px; }
+    .form-stack .btn-block { margin-top: 8px; height: 40px; }
+    .form-view[hidden] { display: none !important; }
+    .form-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: var(--text-sm);
+      color: var(--muted);
+    }
+    .form-footer button {
+      border: 0;
+      background: none;
+      color: var(--fg);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      padding: 0;
+    }
+    .password-wrap { position: relative; }
+    .password-wrap .input { padding-right: 44px; }
+    .toggle-eye {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      border-radius: var(--radius-sm);
+      display: grid;
+      place-items: center;
+    }
+    .toggle-eye:hover { color: var(--fg); }
+    .toggle-eye:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .alert {
+      display: none;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid color-mix(in oklab, var(--danger), white 70%);
+      background: color-mix(in oklab, var(--danger), transparent 94%);
+      color: var(--danger);
+      font-size: var(--text-sm);
+      margin-bottom: 16px;
+    }
+    .alert.is-show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="canvas" data-od-id="auth-canvas">
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div class="auth-canvas">
+      <aside class="auth-visual" data-od-id="auth-visual" aria-label="产品介绍">
+        <div>
+          <p class="eyebrow">Enterprise Console</p>
+          <h1>把运营与权限收进同一张桌面。</h1>
+          <p class="lead">星枢为产品、运营与安全团队提供统一的中后台入口：仪表盘洞察、成员治理与账户安全一处完成。</p>
+        </div>
+        <div class="visual-meta">
+          <div>
+            <div class="k">工作区</div>
+            <div class="v num">12</div>
+          </div>
+          <div>
+            <div class="k">角色模板</div>
+            <div class="v num">6</div>
+          </div>
+          <div>
+            <div class="k">审计保留</div>
+            <div class="v num">90 天</div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="auth-panel" data-od-id="auth-panel">
+        <div class="auth-brand">
+          <div class="brand-mark" aria-hidden="true">N</div>
+          <div>
+            <div class="brand-name">星枢 NovaOps</div>
+            <div class="brand-sub">企业中后台</div>
+          </div>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="登录或注册">
+          <button type="button" class="tab is-active" role="tab" aria-selected="true" data-tab="login" id="tab-login">登录</button>
+          <button type="button" class="tab" role="tab" aria-selected="false" data-tab="register" id="tab-register">注册</button>
+        </div>
+
+        <div id="login-view" class="form-view" role="tabpanel" aria-labelledby="tab-login">
+          <h2 class="form-title">欢迎回来</h2>
+          <p class="form-sub">使用工作邮箱登录企业工作区。</p>
+          <div id="login-alert" class="alert" role="alert"></div>
+          <form id="login-form" class="form-stack" novalidate>
+            <div class="field" data-field="email">
+              <label for="login-email">工作邮箱</label>
+              <input class="input" id="login-email" name="email" type="email" autocomplete="username" placeholder="you@company.com" />
+              <span class="error-msg">请输入有效的企业邮箱地址</span>
+            </div>
+            <div class="field" data-field="password">
+              <label for="login-password">密码</label>
+              <div class="password-wrap">
+                <input class="input" id="login-password" name="password" type="password" autocomplete="current-password" placeholder="至少 8 位" />
+                <button type="button" class="toggle-eye" data-target="login-password" aria-label="显示密码">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                </button>
+              </div>
+              <span class="error-msg">密码至少 8 位</span>
+            </div>
+            <div class="row-between" style="display:flex;align-items:center;justify-content:space-between;">
+              <label class="checkbox-row">
+                <input type="checkbox" id="remember" />
+                保持登录 14 天
+              </label>
+              <button type="button" class="btn btn-ghost btn-sm" id="forgot-btn">忘记密码</button>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">登录工作区</button>
+          </form>
+          <p class="form-footer">还没有账号？<button type="button" data-switch="register">创建企业账号</button></p>
+        </div>
+
+        <div id="register-view" class="form-view" role="tabpanel" aria-labelledby="tab-register" hidden>
+          <h2 class="form-title">创建企业工作区</h2>
+          <p class="form-sub">注册后可邀请成员并分配角色。</p>
+          <div id="register-alert" class="alert" role="alert"></div>
+          <form id="register-form" class="form-stack" novalidate>
+            <div class="row-2">
+              <div class="field" data-field="name">
+                <label for="reg-name">姓名</label>
+                <input class="input" id="reg-name" name="name" type="text" autocomplete="name" placeholder="陈思远" />
+                <span class="error-msg">请填写真实姓名</span>
+              </div>
+              <div class="field" data-field="org">
+                <label for="reg-org">公司名称</label>
+                <input class="input" id="reg-org" name="org" type="text" autocomplete="organization" placeholder="星海科技" />
+                <span class="error-msg">请填写公司名称</span>
+              </div>
+            </div>
+            <div class="field" data-field="email">
+              <label for="reg-email">工作邮箱</label>
+              <input class="input" id="reg-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" />
+              <span class="error-msg">请输入有效的企业邮箱地址</span>
+            </div>
+            <div class="field" data-field="password">
+              <label for="reg-password">设置密码</label>
+              <div class="password-wrap">
+                <input class="input" id="reg-password" name="password" type="password" autocomplete="new-password" placeholder="8 位以上，含字母与数字" />
+                <button type="button" class="toggle-eye" data-target="reg-password" aria-label="显示密码">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                </button>
+              </div>
+              <span class="error-msg">需至少 8 位，且同时包含字母与数字</span>
+            </div>
+            <div class="field" data-field="confirm">
+              <label for="reg-confirm">确认密码</label>
+              <input class="input" id="reg-confirm" name="confirm" type="password" autocomplete="new-password" placeholder="再次输入密码" />
+              <span class="error-msg">两次输入的密码不一致</span>
+            </div>
+            <label class="checkbox-row" id="terms-row">
+              <input type="checkbox" id="reg-terms" />
+              我已阅读并同意服务条款与数据处理协议
+            </label>
+            <p class="error-msg" id="terms-error" style="margin-top:-8px;display:none;">请勾选同意条款后继续</p>
+            <button type="submit" class="btn btn-primary btn-block">创建并进入仪表盘</button>
+          </form>
+          <p class="form-footer">已有账号？<button type="button" data-switch="login">返回登录</button></p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * 切换登录 / 注册视图。
+     * @param {"login"|"register"} mode
+     */
+    function switchAuth(mode) {
+      const loginView = document.getElementById("login-view");
+      const registerView = document.getElementById("register-view");
+      const tabs = document.querySelectorAll(".tab");
+      const isLogin = mode === "login";
+      loginView.hidden = !isLogin;
+      registerView.hidden = isLogin;
+      tabs.forEach((tab) => {
+        const active = tab.dataset.tab === mode;
+        tab.classList.toggle("is-active", active);
+        tab.setAttribute("aria-selected", String(active));
+      });
+    }
+
+    /**
+     * 显示右上角提示。
+     * @param {string} message
+     * @param {"ok"|"error"} [kind]
+     */
+    function showToast(message, kind) {
+      const el = document.getElementById("toast");
+      el.textContent = message;
+      el.classList.toggle("is-error", kind === "error");
+      el.classList.add("is-show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.classList.remove("is-show"), 2400);
+    }
+
+    /**
+     * 校验邮箱格式。
+     * @param {string} value
+     * @returns {boolean}
+     */
+    function isEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+    }
+
+    /**
+     * 设置字段错误态。
+     * @param {HTMLElement|null} field
+     * @param {boolean} invalid
+     */
+    function setInvalid(field, invalid) {
+      if (!field) return;
+      field.classList.toggle("is-invalid", invalid);
+    }
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => switchAuth(tab.dataset.tab));
+    });
+    document.querySelectorAll("[data-switch]").forEach((btn) => {
+      btn.addEventListener("click", () => switchAuth(btn.dataset.switch));
+    });
+
+    document.querySelectorAll(".toggle-eye").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const input = document.getElementById(btn.dataset.target);
+        if (!input) return;
+        const show = input.type === "password";
+        input.type = show ? "text" : "password";
+        btn.setAttribute("aria-label", show ? "隐藏密码" : "显示密码");
+      });
+    });
+
+    document.getElementById("forgot-btn").addEventListener("click", () => {
+      showToast("已向管理员发送重置指引（演示）");
+    });
+
+    document.getElementById("login-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const emailField = document.querySelector("#login-form [data-field='email']");
+      const passField = document.querySelector("#login-form [data-field='password']");
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+      const alert = document.getElementById("login-alert");
+      alert.classList.remove("is-show");
+
+      const emailBad = !isEmail(email);
+      const passBad = password.length < 8;
+      setInvalid(emailField, emailBad);
+      setInvalid(passField, passBad);
+      if (emailBad || passBad) {
+        alert.textContent = "请先修正标红字段后再登录。";
+        alert.classList.add("is-show");
+        return;
+      }
+
+      if (email.toLowerCase() === "demo@blocked.com") {
+        alert.textContent = "该账号已被停用，请联系工作区管理员。";
+        alert.classList.add("is-show");
+        setInvalid(emailField, true);
+        return;
+      }
+
+      showToast("登录成功，正在进入仪表盘…");
+      setTimeout(() => { window.location.href = "dashboard.html"; }, 700);
+    });
+
+    document.getElementById("register-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("reg-name").value.trim();
+      const org = document.getElementById("reg-org").value.trim();
+      const email = document.getElementById("reg-email").value;
+      const password = document.getElementById("reg-password").value;
+      const confirm = document.getElementById("reg-confirm").value;
+      const terms = document.getElementById("reg-terms").checked;
+      const alert = document.getElementById("register-alert");
+      const termsError = document.getElementById("terms-error");
+      alert.classList.remove("is-show");
+
+      const nameBad = name.length < 2;
+      const orgBad = org.length < 2;
+      const emailBad = !isEmail(email);
+      const passBad = !/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password);
+      const confirmBad = confirm !== password || !confirm;
+      setInvalid(document.querySelector("#register-form [data-field='name']"), nameBad);
+      setInvalid(document.querySelector("#register-form [data-field='org']"), orgBad);
+      setInvalid(document.querySelector("#register-form [data-field='email']"), emailBad);
+      setInvalid(document.querySelector("#register-form [data-field='password']"), passBad);
+      setInvalid(document.querySelector("#register-form [data-field='confirm']"), confirmBad);
+      termsError.style.display = terms ? "none" : "block";
+
+      if (nameBad || orgBad || emailBad || passBad || confirmBad || !terms) {
+        alert.textContent = "注册信息不完整，请检查标红字段。";
+        alert.classList.add("is-show");
+        return;
+      }
+
+      showToast("工作区已创建，正在进入仪表盘…");
+      setTimeout(() => { window.location.href = "dashboard.html"; }, 700);
+    });
+  </script>
+</body>
+</html>

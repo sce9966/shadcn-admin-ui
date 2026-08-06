@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>仪表盘 · 星枢 NovaOps</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .kpi {
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+    .kpi .label {
+      font-size: var(--text-xs);
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .kpi .value {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: var(--tracking-display);
+    }
+    .kpi .delta {
+      margin-top: 8px;
+      font-size: var(--text-xs);
+      color: var(--muted);
+    }
+    .kpi .delta.up { color: var(--success); }
+    .kpi .delta.down { color: var(--danger); }
+    .layout-2 {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .chart {
+      height: 220px;
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      align-items: end;
+      gap: 8px;
+      padding-top: 8px;
+    }
+    .chart-bar {
+      background: color-mix(in oklab, var(--fg), transparent 88%);
+      border-radius: 4px 4px 0 0;
+      min-height: 8px;
+      transition: background var(--motion-fast) var(--ease-standard);
+    }
+    .chart-bar.is-peak { background: var(--accent); }
+    .chart-bar:hover { background: var(--accent); }
+    .chart-axis {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .chart-axis span {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+    .activity-list { display: flex; flex-direction: column; }
+    .activity-item {
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      gap: 12px;
+      align-items: start;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: 0; padding-bottom: 0; }
+    .activity-item:first-child { padding-top: 0; }
+    .activity-body .title { font-size: var(--text-sm); font-weight: 500; }
+    .activity-body .sub { font-size: var(--text-xs); color: var(--muted); margin-top: 4px; }
+    .range-pills {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      background: color-mix(in oklab, var(--fg), transparent 96%);
+      border-radius: var(--radius-sm);
+    }
+    .range-pills button {
+      height: 28px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--muted);
+      font-size: var(--text-xs);
+      font-weight: 500;
+    }
+    .range-pills button.is-active {
+      background: var(--surface);
+      color: var(--fg);
+      box-shadow: var(--elev-raised);
+    }
+    .range-pills button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .quick-action {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      text-align: left;
+      transition: border-color var(--motion-fast) var(--ease-standard),
+        background var(--motion-fast) var(--ease-standard);
+    }
+    .quick-action:hover {
+      border-color: var(--fg);
+      background: color-mix(in oklab, var(--fg), transparent 98%);
+    }
+    .quick-action:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .quick-action .qa-title { font-weight: 600; font-size: var(--text-sm); }
+    .quick-action .qa-desc { font-size: var(--text-xs); color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="canvas" data-od-id="dashboard-canvas">
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div class="shell" data-admin-shell data-page="dashboard" data-title="仪表盘" data-content-id="dashboard-content">
+      <aside class="sidebar" data-od-id="sidebar">
+        <a class="brand" href="index.html" title="返回入口">
+          <div class="brand-mark" aria-hidden="true">N</div>
+          <div>
+            <div class="brand-name">星枢 NovaOps</div>
+            <div class="brand-sub">星海科技 · 生产环境</div>
+          </div>
+        </a>
+        <nav class="nav" aria-label="主导航">
+          <div class="nav-label">总览</div>
+          <a class="nav-item is-active" href="dashboard.html" data-nav="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-5v-5H10v5H5a1 1 0 0 1-1-1v-8Z"/></svg>
+            仪表盘
+          </a>
+          <div class="nav-label">组织</div>
+          <a class="nav-item" href="users.html" data-nav="users">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            用户管理
+          </a>
+          <a class="nav-item" href="settings.html" data-nav="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+            个人设置
+          </a>
+        </nav>
+      </aside>
+      <div class="main">
+        <header class="topbar" data-od-id="topbar">
+          <div class="topbar-left">
+            <nav class="breadcrumb" aria-label="面包屑">
+              <a href="index.html">首页</a>
+              <span class="breadcrumb-sep" aria-hidden="true">/</span>
+              <span class="breadcrumb-current">仪表盘</span>
+            </nav>
+            <div class="topbar-title">仪表盘</div>
+          </div>
+          <div class="topbar-actions">
+            <button type="button" class="icon-btn theme-toggle-btn" data-theme-toggle data-theme-state="light"
+              aria-pressed="false" aria-label="当前浅色主题，点击切换为深色" title="浅色主题">
+              <svg data-theme-icon viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+              </svg>
+            </button>
+            <button type="button" class="icon-btn" id="notify-btn" aria-label="通知">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 9H3c0-2 3-2 3-9"/>
+                <path d="M10 20a2 2 0 0 0 4 0"/>
+              </svg>
+            </button>
+            <div class="dropdown" data-user-menu>
+              <button type="button" class="user-menu-trigger" data-user-menu-trigger
+                aria-label="用户菜单" aria-haspopup="menu" aria-expanded="false" aria-controls="user-menu-panel">
+                <div class="avatar" aria-hidden="true">陈</div>
+              </button>
+              <div class="dropdown-menu" id="user-menu-panel" data-user-menu-panel role="menu" hidden>
+                <div class="dropdown-head">
+                  <div class="name">陈思远</div>
+                  <div class="email">chen@xinghai.cn</div>
+                </div>
+                <a class="dropdown-item" role="menuitem" href="settings.html">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>
+                  </svg>
+                  个人设置
+                </a>
+                <div class="dropdown-sep" role="separator"></div>
+                <a class="dropdown-item is-danger" role="menuitem" href="auth.html">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <path d="M16 17l5-5-5-5"/>
+                    <path d="M21 12H9"/>
+                  </svg>
+                  退出登录
+                </a>
+              </div>
+            </div>
+          </div>
+        </header>
+        <main class="content" id="content" data-od-id="dashboard-content">
+          <div class="page-head">
+            <div>
+              <h1>今日运营概览</h1>
+              <p class="desc">生产环境 · 上海时区 · 数据截至刚才</p>
+            </div>
+            <div class="range-pills" role="group" aria-label="时间范围">
+              <button type="button" data-range="7d" class="is-active">近 7 天</button>
+              <button type="button" data-range="30d">近 30 天</button>
+              <button type="button" data-range="90d">近 90 天</button>
+            </div>
+          </div>
+
+          <section class="kpi-grid" data-od-id="kpi-row" aria-label="关键指标">
+            <article class="kpi">
+              <div class="label">活跃成员</div>
+              <div class="value num" data-kpi="active">128</div>
+              <div class="delta up">较上周 +6</div>
+            </article>
+            <article class="kpi">
+              <div class="label">待处理工单</div>
+              <div class="value num" data-kpi="tickets">17</div>
+              <div class="delta down">较昨日 −3</div>
+            </article>
+            <article class="kpi">
+              <div class="label">登录成功率</div>
+              <div class="value num" data-kpi="login">98.6%</div>
+              <div class="delta">近 24 小时</div>
+            </article>
+            <article class="kpi">
+              <div class="label">存储占用</div>
+              <div class="value num" data-kpi="storage">2.4 TB</div>
+              <div class="delta">配额 5 TB</div>
+            </article>
+          </section>
+
+          <div class="layout-2">
+            <section class="panel" data-od-id="traffic-panel">
+              <div class="panel-head">
+                <h2 class="panel-title">接口调用量</h2>
+                <span class="meta" id="chart-caption">近 7 天 · 按小时聚合</span>
+              </div>
+              <div class="panel-body">
+                <div class="chart" id="chart" aria-hidden="true"></div>
+                <div class="chart-axis" id="chart-axis"></div>
+              </div>
+            </section>
+
+            <section class="panel" data-od-id="activity-panel">
+              <div class="panel-head">
+                <h2 class="panel-title">最近动态</h2>
+                <a class="btn btn-ghost btn-sm" href="users.html">查看全部</a>
+              </div>
+              <div class="panel-body">
+                <div class="activity-list" id="activity-list"></div>
+              </div>
+            </section>
+          </div>
+
+          <section class="panel" data-od-id="quick-panel">
+            <div class="panel-head">
+              <h2 class="panel-title">快捷操作</h2>
+            </div>
+            <div class="panel-body">
+              <div class="quick-actions">
+                <button type="button" class="quick-action" data-goto="users.html">
+                  <span class="qa-title">邀请成员</span>
+                  <span class="qa-desc">发送邮件邀请并预分配角色</span>
+                </button>
+                <button type="button" class="quick-action" data-goto="users.html">
+                  <span class="qa-title">导出审计</span>
+                  <span class="qa-desc">下载近 30 天登录与权限变更</span>
+                </button>
+                <button type="button" class="quick-action" data-goto="settings.html">
+                  <span class="qa-title">安全设置</span>
+                  <span class="qa-desc">开启 MFA 与会话超时策略</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/layout.js"></script>
+  <script>
+    const RANGE_DATA = {
+      "7d": {
+        caption: "近 7 天 · 按小时聚合",
+        kpi: { active: "128", tickets: "17", login: "98.6%", storage: "2.4 TB" },
+        bars: [42, 55, 48, 62, 70, 58, 66, 74, 81, 69, 77, 88],
+        labels: ["00", "02", "04", "06", "08", "10", "12", "14", "16", "18", "20", "22"]
+      },
+      "30d": {
+        caption: "近 30 天 · 按日聚合",
+        kpi: { active: "146", tickets: "41", login: "97.9%", storage: "2.6 TB" },
+        bars: [50, 48, 61, 57, 72, 68, 75, 70, 82, 78, 86, 91],
+        labels: ["W1", "W1", "W2", "W2", "W3", "W3", "W4", "W4", "W5", "W5", "今", "今"]
+      },
+      "90d": {
+        caption: "近 90 天 · 按周聚合",
+        kpi: { active: "162", tickets: "93", login: "97.2%", storage: "2.9 TB" },
+        bars: [40, 44, 52, 49, 58, 63, 60, 71, 76, 80, 84, 90],
+        labels: ["M1", "M1", "M1", "M2", "M2", "M2", "M3", "M3", "M3", "近", "近", "今"]
+      }
+    };
+
+    const ACTIVITIES = [
+      { initial: "林", title: "林晓加入「运营」角色", sub: "由陈思远审批 · 14:22", time: "12 分钟前" },
+      { initial: "系", title: "生产 API 密钥轮换完成", sub: "密钥 sk_live_…8f2a · 自动任务", time: "41 分钟前" },
+      { initial: "周", title: "周明导出用户名单", sub: "CSV · 128 行 · IP 10.2.18.44", time: "2 小时前" },
+      { initial: "安", title: "异地登录告警已关闭", sub: "账号 zhao@xinghai.cn · 已确认本人", time: "昨天" }
+    ];
+
+    /**
+     * 渲染柱状图。
+     * @param {"7d"|"30d"|"90d"} range
+     */
+    function renderRange(range) {
+      const data = RANGE_DATA[range];
+      const chart = document.getElementById("chart");
+      const axis = document.getElementById("chart-axis");
+      const max = Math.max(...data.bars);
+      document.getElementById("chart-caption").textContent = data.caption;
+      Object.entries(data.kpi).forEach(([key, value]) => {
+        const node = document.querySelector(`[data-kpi="${key}"]`);
+        if (node) node.textContent = value;
+      });
+      chart.innerHTML = data.bars.map((h) => {
+        const pct = Math.round((h / max) * 100);
+        const peak = h === max ? " is-peak" : "";
+        return `<div class="chart-bar${peak}" style="height:${pct}%" title="${h}"></div>`;
+      }).join("");
+      axis.innerHTML = data.labels.map((l) => `<span>${l}</span>`).join("");
+    }
+
+    function renderActivity() {
+      const list = document.getElementById("activity-list");
+      list.innerHTML = ACTIVITIES.map((item) => `
+        <div class="activity-item">
+          <div class="avatar">${item.initial}</div>
+          <div class="activity-body">
+            <div class="title">${item.title}</div>
+            <div class="sub">${item.sub}</div>
+          </div>
+          <span class="meta">${item.time}</span>
+        </div>
+      `).join("");
+    }
+
+    document.querySelectorAll("[data-range]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-range]").forEach((b) => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        renderRange(btn.dataset.range);
+      });
+    });
+
+    document.querySelectorAll("[data-goto]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        window.location.href = btn.dataset.goto;
+      });
+    });
+
+    renderRange("7d");
+    renderActivity();
+  </script>
+
+
+</body></html>

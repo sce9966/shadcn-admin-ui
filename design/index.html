@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>星枢 NovaOps · 企业中后台</title>
+  <link rel="stylesheet" href="css/admin.css" />
+  <style>
+    .home {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 48px 72px;
+      background:
+        linear-gradient(180deg,
+          var(--bg) 0%,
+          color-mix(in oklab, var(--fg), transparent 98%) 100%);
+    }
+    .home-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    .home-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .home-brand .brand-mark {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+    .home-brand h1 {
+      font-size: var(--text-2xl);
+      font-weight: 600;
+    }
+    .home-brand p {
+      color: var(--muted);
+      font-size: var(--text-sm);
+      margin-top: 4px;
+    }
+    .home-actions { display: flex; gap: 10px; }
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      align-content: start;
+    }
+    .screen-card {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      min-height: 280px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      overflow: hidden;
+      transition: border-color var(--motion-fast) var(--ease-standard),
+        box-shadow var(--motion-base) var(--ease-standard);
+    }
+    .screen-card:hover {
+      border-color: var(--fg);
+      box-shadow: var(--elev-raised);
+    }
+    .screen-card:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+    .screen-copy {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .screen-copy .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .screen-copy h2 {
+      font-size: var(--text-xl);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .screen-copy p {
+      color: var(--muted);
+      font-size: var(--text-sm);
+      max-width: 34ch;
+    }
+    .screen-copy .cta {
+      margin-top: 24px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .screen-preview {
+      border-left: 1px solid var(--border);
+      background: color-mix(in oklab, var(--fg), transparent 97%);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .mini-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: color-mix(in oklab, var(--fg), transparent 90%);
+    }
+    .mini-bar.short { width: 55%; }
+    .mini-bar.mid { width: 72%; }
+    .mini-panel {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+    .mini-row {
+      height: 8px;
+      border-radius: 4px;
+      background: color-mix(in oklab, var(--fg), transparent 92%);
+    }
+    .mini-row.accent { background: var(--accent); width: 40%; }
+    .home-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: var(--text-xs);
+    }
+    .home-foot .num { color: var(--fg); }
+  </style>
+</head>
+<body>
+  <div class="canvas" data-od-id="home-canvas">
+    <div class="home">
+      <header class="home-top" data-od-id="home-header">
+        <div class="home-brand">
+          <div class="brand-mark" aria-hidden="true">N</div>
+          <div>
+            <h1>星枢 NovaOps</h1>
+            <p>企业中后台模板 · 固定画布 1920×1080 · 统一壳层布局</p>
+          </div>
+        </div>
+        <div class="home-actions">
+          <a class="btn btn-secondary" href="auth.html">进入登录</a>
+          <a class="btn btn-primary" href="dashboard.html">打开仪表盘</a>
+        </div>
+      </header>
+
+      <section class="screen-grid" data-od-id="screen-grid" aria-label="产品页面">
+        <a class="screen-card" href="auth.html">
+          <div class="screen-copy">
+            <div>
+              <div class="eyebrow">01 · Auth</div>
+              <h2>登录与注册</h2>
+              <p>同一页面切换登录 / 注册，含字段校验、错误态与密码可见性切换。</p>
+            </div>
+            <span class="cta">打开页面 →</span>
+          </div>
+          <div class="screen-preview" aria-hidden="true">
+            <div class="mini-bar mid"></div>
+            <div class="mini-panel">
+              <div class="mini-row"></div>
+              <div class="mini-row"></div>
+              <div class="mini-row accent"></div>
+            </div>
+          </div>
+        </a>
+
+        <a class="screen-card" href="dashboard.html">
+          <div class="screen-copy">
+            <div>
+              <div class="eyebrow">02 · Dashboard</div>
+              <h2>仪表盘</h2>
+              <p>统一侧栏壳层、KPI、调用量趋势、最近动态与快捷操作，可切换时间范围。</p>
+            </div>
+            <span class="cta">打开页面 →</span>
+          </div>
+          <div class="screen-preview" aria-hidden="true">
+            <div class="mini-bar short"></div>
+            <div class="mini-panel" style="grid-template-columns:repeat(4,1fr);align-items:end;">
+              <div class="mini-row" style="height:28px;"></div>
+              <div class="mini-row" style="height:44px;"></div>
+              <div class="mini-row accent" style="height:64px;"></div>
+              <div class="mini-row" style="height:36px;"></div>
+            </div>
+          </div>
+        </a>
+
+        <a class="screen-card" href="users.html">
+          <div class="screen-copy">
+            <div>
+              <div class="eyebrow">03 · Users</div>
+              <h2>用户管理</h2>
+              <p>成员列表、角色 / 状态筛选、停用启用，以及带校验的邀请侧栏。</p>
+            </div>
+            <span class="cta">打开页面 →</span>
+          </div>
+          <div class="screen-preview" aria-hidden="true">
+            <div class="mini-bar"></div>
+            <div class="mini-panel">
+              <div class="mini-row"></div>
+              <div class="mini-row mid" style="width:80%;"></div>
+              <div class="mini-row short"></div>
+              <div class="mini-row" style="width:65%;"></div>
+            </div>
+          </div>
+        </a>
+
+        <a class="screen-card" href="settings.html">
+          <div class="screen-copy">
+            <div>
+              <div class="eyebrow">04 · Settings</div>
+              <h2>个人设置</h2>
+              <p>资料编辑、通知开关、MFA / 改密校验与会话撤销，分区可切换。</p>
+            </div>
+            <span class="cta">打开页面 →</span>
+          </div>
+          <div class="screen-preview" aria-hidden="true">
+            <div class="mini-bar short"></div>
+            <div class="mini-panel">
+              <div class="mini-row accent"></div>
+              <div class="mini-row"></div>
+              <div class="mini-row mid" style="width:70%;"></div>
+            </div>
+          </div>
+        </a>
+      </section>
+
+      <footer class="home-foot" data-od-id="home-footer">
+        <span>© 2026 星枢 NovaOps · 星海科技</span>
+        <span>画布 <span class="num">1920×1080</span> · 统一布局 · 4 个独立页面</span>
+      </footer>
+    </div>
+  </div>
+</body>
+</html>
