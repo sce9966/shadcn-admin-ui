@@ -22,6 +22,9 @@ export function writeAccessToken(token: string, remember = true): void {
   storage.setItem(ACCESS_TOKEN_KEY, token)
 }
 
+/** `writeAccessToken` 别名（与鉴权 store 命名对齐） */
+export const persistAccessToken = writeAccessToken
+
 /**
  * 清除两端 storage 中的 token。
  */

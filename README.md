@@ -52,6 +52,13 @@ pnpm dev:web
 
 健康检查：`GET http://localhost:3000/api/health`（需 MySQL 已启动且库已创建，API 启动时会连接 TypeORM）。
 
+鉴权（AIL-35）：
+
+- `POST /api/auth/register` — `{ name, orgName, email, password }`
+- `POST /api/auth/login` — `{ email, password, remember? }`
+- `GET /api/auth/me` / `POST /api/auth/logout` — 需 `Authorization: Bearer <token>`
+- 前端 `/auth`：登录 / 注册；未登录访问 `/dashboard` 等会跳转 `/auth`
+
 ## 环境变量（仅变量名说明）
 
 ### `apps/api/.env`
@@ -61,7 +68,9 @@ pnpm dev:web
 | `NODE_ENV` | `development` 时 TypeORM `synchronize=true`；生产必须 `false` 并用迁移 |
 | `PORT` | API 端口，默认 `3000` |
 | `DB_HOST` / `DB_PORT` / `DB_USER` / `DB_PASSWORD` / `DB_NAME` | MySQL 连接（默认库名 `novaops`） |
-| `JWT_SECRET` / `JWT_EXPIRES_IN` | JWT（Stage 3 鉴权使用） |
+| `JWT_SECRET` | JWT 签名密钥（必改） |
+| `JWT_EXPIRES_IN` | 默认过期，如 `1d` |
+| `JWT_REMEMBER_EXPIRES_IN` | 记住登录过期，如 `14d` |
 | `CORS_ORIGIN` | CORS 允许源，默认 `http://localhost:5173` |
 | `DASHBOARD_USE_MOCK` | 仪表盘 mock 开关（后续 Stage） |
 
@@ -82,7 +91,7 @@ pnpm dev:web
 
 - 开发：`synchronize: true`（`NODE_ENV=development`）
 - 生产：关闭 synchronize，使用 migration（后续 Stage 补充脚本）
-- 脚手架阶段尚无业务 Entity；连接成功即表示 MySQL 配置正确
+- 鉴权 Entity：`organizations` / `users` / `sessions`（开发期 synchronize 自动建表）
 
 ## shadcn-vue
 

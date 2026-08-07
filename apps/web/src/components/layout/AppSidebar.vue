@@ -13,7 +13,7 @@ const route = useRoute()
 const auth = useAuthStore()
 
 const brandSub = computed(() => {
-  const org = auth.user?.organizationName?.trim()
+  const org = auth.user?.organization?.name?.trim()
   return `${org || '星海科技'} · 生产环境`
 })
 

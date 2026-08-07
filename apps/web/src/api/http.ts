@@ -22,6 +22,7 @@ http.interceptors.response.use(
   (error) => {
     const status = error.response?.status as number | undefined
     const url = String(error.config?.url ?? '')
+    // `/auth/me` 401 由 store.fetchMe 清会话，避免与拦截器双清竞态
     const skipSessionClear =
       url.includes('/auth/me') ||
       url.includes('/auth/login') ||

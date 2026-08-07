@@ -1,100 +1,152 @@
-import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { http } from '@/api/http'
+import { computed, ref } from 'vue'
+import {
+  fetchMeApi,
+  loginApi,
+  logoutApi,
+  registerApi,
+} from '@/api/auth'
 import {
   clearAccessToken,
   isAuthBypassEnabled,
+  persistAccessToken,
   readAccessToken,
 } from '@/lib/auth-token'
-
-/** 当前用户（壳层消费面；AIL-35 可扩展字段） */
-export interface AuthUser {
-  id: number
-  name: string
-  email: string
-  role: string
-  organizationName?: string
-}
+import type { AuthUser } from '@/types/auth'
 
 /**
- * 鉴权 store 最小契约（AIL-35 / AIL-36 共用）。
- * 本 issue 提供 stub：读 token、可选 /me、logout 清本地。
+ * 鉴权状态：token、当前用户与登录/注册/登出。
  */
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref<string | null>(readAccessToken())
+  const accessToken = ref<string | null>(readAccessToken())
   const user = ref<AuthUser | null>(null)
-  const hydrated = ref(false)
+  const bootstrapped = ref(false)
 
   const isAuthenticated = computed(
-    () => Boolean(token.value) || isAuthBypassEnabled(),
+    () => Boolean(accessToken.value) || isAuthBypassEnabled(),
   )
 
   /**
-   * 从 storage 恢复 token，并尽力拉取 `/auth/me`（失败不抛出）。
+   * 从 storage 恢复 token。
    */
-  async function hydrate(): Promise<void> {
-    token.value = readAccessToken()
-    if (!token.value) {
-      user.value = null
-      hydrated.value = true
-      return
-    }
-
-    try {
-      const { data } = await http.get<{
-        code: number
-        data: AuthUser | null
-      }>('/auth/me')
-      if (data.code === 0 && data.data) {
-        user.value = data.data
-      } else {
-        user.value = null
-      }
-    } catch {
-      user.value = null
-    } finally {
-      hydrated.value = true
-    }
+  function hydrateFromStorage() {
+    accessToken.value = readAccessToken()
   }
 
   /**
-   * 登出：清本地 token；可选调用 logout API（失败忽略）。
+   * 应用会话（token + user）。
    */
-  async function logout(): Promise<void> {
-    try {
-      if (token.value) {
-        await http.post('/auth/logout')
-      }
-    } catch {
-      // AIL-35 未就绪或网络失败时仍清本地会话
-    }
+  function applySession(
+    token: string,
+    nextUser: AuthUser,
+    remember: boolean,
+  ) {
+    persistAccessToken(token, remember)
+    accessToken.value = token
+    user.value = nextUser
+  }
+
+  /**
+   * 清空本地会话。
+   */
+  function clearSession() {
     clearAccessToken()
-    token.value = null
+    accessToken.value = null
     user.value = null
   }
 
   /**
-   * 同步内存中的 token（供 AIL-35 login 后调用）。
+   * 登录。
    */
-  function setToken(next: string | null): void {
-    token.value = next
+  async function login(payload: {
+    email: string
+    password: string
+    remember?: boolean
+  }) {
+    const res = await loginApi(payload)
+    if (res.code !== 0 || !res.data) {
+      throw new Error(res.message || '登录失败')
+    }
+    applySession(res.data.accessToken, res.data.user, Boolean(payload.remember))
+    return res.data
   }
 
   /**
-   * 设置当前用户。
+   * 注册。
    */
-  function setUser(next: AuthUser | null): void {
-    user.value = next
+  async function register(payload: {
+    name: string
+    orgName: string
+    email: string
+    password: string
+  }) {
+    const res = await registerApi(payload)
+    if (res.code !== 0 || !res.data) {
+      throw new Error(res.message || '注册失败')
+    }
+    applySession(res.data.accessToken, res.data.user, true)
+    return res.data
+  }
+
+  /**
+   * 拉取当前用户；失败则清会话。
+   */
+  async function fetchMe() {
+    if (!accessToken.value) {
+      user.value = null
+      return null
+    }
+    try {
+      const res = await fetchMeApi()
+      if (res.code !== 0 || !res.data) {
+        clearSession()
+        return null
+      }
+      user.value = res.data
+      return res.data
+    } catch {
+      clearSession()
+      return null
+    }
+  }
+
+  /**
+   * 登出（尽力吊销服务端会话）。
+   */
+  async function logout() {
+    try {
+      if (accessToken.value) {
+        await logoutApi()
+      }
+    } catch {
+      // 忽略网络错误，本地仍清会话
+    } finally {
+      clearSession()
+    }
+  }
+
+  /**
+   * 应用启动时初始化会话。
+   */
+  async function bootstrap() {
+    hydrateFromStorage()
+    if (accessToken.value) {
+      await fetchMe()
+    }
+    bootstrapped.value = true
   }
 
   return {
-    token,
+    accessToken,
     user,
-    hydrated,
+    bootstrapped,
     isAuthenticated,
-    hydrate,
+    hydrateFromStorage,
+    login,
+    register,
+    fetchMe,
     logout,
-    setToken,
-    setUser,
+    clearSession,
+    bootstrap,
   }
 })

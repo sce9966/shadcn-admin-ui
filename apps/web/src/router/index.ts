@@ -11,7 +11,7 @@ const router = createRouter({
     {
       path: '/auth',
       name: 'auth',
-      component: () => import('@/views/AuthPlaceholderView.vue'),
+      component: () => import('@/views/auth/AuthView.vue'),
       meta: { public: true },
     },
     {
