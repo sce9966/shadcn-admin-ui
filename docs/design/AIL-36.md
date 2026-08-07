@@ -4,7 +4,7 @@
 > 原型基线：`design/js/layout.js`、`design/css/admin.css`（`.shell` / `.sidebar` / `.topbar`）  
 > 总设计依据：`docs/design/AIL-33.md`  
 > 仓库设计文件路径：`docs/design/AIL-36.md`  
-> 状态：待评审（通过后请评论 @ 全栈工程师，再开始编码）
+> 状态：评审通过（2026-08-07）· 实现中
 
 ---
 

@@ -1,19 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { readAccessToken, isAuthBypassEnabled } from '@/lib/auth-token'
+import { setupRouterGuards } from './guards'
 
 /**
- * 路由占位：真实鉴权守卫与业务页在 Stage 3+ 落地。
- * `/` 按登录态分流（当前脚手架无 token，默认进 /auth）。
+ * 应用路由：Auth 独立；业务页挂 AdminLayout。
  */
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      redirect: () => {
-        const token = localStorage.getItem('novaops_access_token')
-        return token ? '/dashboard' : '/auth'
-      },
-    },
     {
       path: '/auth',
       name: 'auth',
@@ -21,21 +15,40 @@ const router = createRouter({
       meta: { public: true },
     },
     {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: () => import('@/views/DashboardPlaceholderView.vue'),
-    },
-    {
-      path: '/users',
-      name: 'users',
-      component: () => import('@/views/UsersPlaceholderView.vue'),
-    },
-    {
-      path: '/settings',
-      name: 'settings',
-      component: () => import('@/views/SettingsPlaceholderView.vue'),
+      path: '/',
+      component: () => import('@/layouts/AdminLayout.vue'),
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          redirect: () => {
+            const ok = Boolean(readAccessToken()) || isAuthBypassEnabled()
+            return ok ? '/dashboard' : '/auth'
+          },
+        },
+        {
+          path: 'dashboard',
+          name: 'dashboard',
+          component: () => import('@/views/DashboardPlaceholderView.vue'),
+          meta: { title: '仪表盘', nav: 'dashboard' },
+        },
+        {
+          path: 'users',
+          name: 'users',
+          component: () => import('@/views/UsersPlaceholderView.vue'),
+          meta: { title: '用户管理', nav: 'users' },
+        },
+        {
+          path: 'settings',
+          name: 'settings',
+          component: () => import('@/views/SettingsPlaceholderView.vue'),
+          meta: { title: '个人设置', nav: 'settings' },
+        },
+      ],
     },
   ],
 })
+
+setupRouterGuards(router)
 
 export default router
