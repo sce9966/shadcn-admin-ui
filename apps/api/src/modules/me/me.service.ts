@@ -151,6 +151,10 @@ export class MeService {
   ): Promise<{ ok: true }> {
     const user = await this.requireUser(authUser.id)
 
+    if (!user.passwordHash) {
+      throw new BadRequestException('该账号尚未设置密码，无法修改')
+    }
+
     const matched = await bcrypt.compare(
       dto.currentPassword,
       user.passwordHash,
