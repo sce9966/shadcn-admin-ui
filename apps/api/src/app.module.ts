@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { AuthModule } from './modules/auth/auth.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { HealthModule } from './modules/health/health.module'
+import { UsersModule } from './modules/users/users.module'
 
 /**
  * 根模块：全局配置、TypeORM MySQL、健康检查与鉴权。
@@ -32,6 +33,7 @@ import { HealthModule } from './modules/health/health.module'
     }),
     HealthModule,
     AuthModule,
+    UsersModule,
     DashboardModule,
   ],
 })
