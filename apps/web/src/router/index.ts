@@ -41,7 +41,7 @@ const router = createRouter({
         {
           path: 'settings',
           name: 'settings',
-          component: () => import('@/views/SettingsPlaceholderView.vue'),
+          component: () => import('@/views/settings/SettingsView.vue'),
           meta: { title: '个人设置', nav: 'settings' },
         },
       ],

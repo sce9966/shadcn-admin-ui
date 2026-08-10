@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AuthModule } from './modules/auth/auth.module'
 import { HealthModule } from './modules/health/health.module'
+import { MeModule } from './modules/me/me.module'
 
 /**
  * 根模块：全局配置、TypeORM MySQL、健康检查与鉴权。
@@ -31,6 +32,7 @@ import { HealthModule } from './modules/health/health.module'
     }),
     HealthModule,
     AuthModule,
+    MeModule,
   ],
 })
 export class AppModule {}

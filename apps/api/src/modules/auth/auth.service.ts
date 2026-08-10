@@ -131,19 +131,29 @@ export class AuthService {
   }
 
   /**
-   * 当前用户摘要。
+   * 当前用户摘要（从 DB 重读，含资料与安全字段）。
    */
   async me(user: AuthUserPayload): Promise<AuthUserView> {
+    const entity = await this.userRepo.findOne({
+      where: { id: user.id },
+      relations: { organization: true },
+    })
+    if (!entity) {
+      throw new UnauthorizedException('未登录或登录已失效')
+    }
     return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      status: user.status,
-      title: user.title,
+      id: String(entity.id),
+      name: entity.name,
+      email: entity.email,
+      role: entity.role,
+      status: entity.status,
+      title: entity.title,
+      bio: entity.bio,
+      mfaEnabled: entity.mfaEnabled,
+      idleLogout: entity.idleLogout,
       organization: {
-        id: user.organizationId,
-        name: user.organizationName,
+        id: String(entity.organizationId),
+        name: entity.organization?.name ?? user.organizationName,
       },
     }
   }
@@ -201,6 +211,9 @@ export class AuthService {
         role: user.role,
         status: user.status,
         title: user.title,
+        bio: user.bio,
+        mfaEnabled: user.mfaEnabled,
+        idleLogout: user.idleLogout,
         organization: {
           id: String(user.organizationId),
           name: orgName,

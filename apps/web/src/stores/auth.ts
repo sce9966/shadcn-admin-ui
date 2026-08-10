@@ -126,6 +126,21 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
+   * 用最新用户摘要覆盖 store（资料保存后同步顶栏）。
+   */
+  function setUser(next: AuthUser) {
+    user.value = next
+  }
+
+  /**
+   * 部分合并用户字段（安全开关等）。
+   */
+  function patchUser(partial: Partial<AuthUser>) {
+    if (!user.value) return
+    user.value = { ...user.value, ...partial }
+  }
+
+  /**
    * 应用启动时初始化会话。
    */
   async function bootstrap() {
@@ -147,6 +162,8 @@ export const useAuthStore = defineStore('auth', () => {
     fetchMe,
     logout,
     clearSession,
+    setUser,
+    patchUser,
     bootstrap,
   }
 })
