@@ -8,6 +8,8 @@
  */
 :root {
   --radius: 0.5rem;
+  --sidebar-w: 240px;
+  --topbar-h: 64px;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { clearAccessToken, readAccessToken } from '@/lib/auth-token'
 
 /**
  * 统一 Axios 实例；开发环境默认走 Vite 代理 `/api`。
@@ -9,7 +10,7 @@ export const http = axios.create({
 })
 
 http.interceptors.request.use((config) => {
-  const token = localStorage.getItem('novaops_access_token')
+  const token = readAccessToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -18,5 +19,25 @@ http.interceptors.request.use((config) => {
 
 http.interceptors.response.use(
   (response) => response,
-  (error) => Promise.reject(error),
+  (error) => {
+    const status = error.response?.status as number | undefined
+    const url = String(error.config?.url ?? '')
+    // `/auth/me` 401 由 store.fetchMe 清会话，避免与拦截器双清竞态
+    const skipSessionClear =
+      url.includes('/auth/me') ||
+      url.includes('/auth/login') ||
+      url.includes('/auth/register') ||
+      url.includes('/auth/logout')
+
+    if (status === 401 && !skipSessionClear) {
+      clearAccessToken()
+      const path = window.location.pathname
+      if (!path.startsWith('/auth')) {
+        const redirect = encodeURIComponent(path + window.location.search)
+        window.location.assign(`/auth?redirect=${redirect}`)
+      }
+    }
+
+    return Promise.reject(error)
+  },
 )

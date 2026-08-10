@@ -1,20 +1,14 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
-import { Button } from '@/components/ui/button'
+/**
+ * 个人设置内容占位（业务 UI 见 AIL-39）。
+ */
 </script>
 
 <template>
-  <main class="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 p-8">
-    <div class="flex flex-col gap-2">
-      <p class="text-sm text-muted-foreground">星枢 NovaOps · 脚手架占位</p>
-      <h1 class="text-3xl font-semibold tracking-tight">个人设置</h1>
-      <p class="text-muted-foreground">
-        资料 / 通知 / 安全将在 Stage 4 对齐
-        <code class="text-foreground">design/settings.html</code>
-      </p>
-    </div>
-    <Button variant="outline" as-child>
-      <RouterLink to="/dashboard">返回仪表盘</RouterLink>
-    </Button>
-  </main>
+  <div class="flex flex-col gap-2">
+    <p class="text-sm text-muted-foreground">Stage 4 将对齐 design/settings.html</p>
+    <p class="text-muted-foreground">
+      此处为内容区占位，侧栏 / 顶栏已由管理后台壳层提供。
+    </p>
+  </div>
 </template>
