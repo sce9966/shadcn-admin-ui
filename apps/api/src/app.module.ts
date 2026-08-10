@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AuthModule } from './modules/auth/auth.module'
+import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { HealthModule } from './modules/health/health.module'
 import { MeModule } from './modules/me/me.module'
+import { UsersModule } from './modules/users/users.module'
 
 /**
  * 根模块：全局配置、TypeORM MySQL、健康检查与鉴权。
@@ -33,6 +35,8 @@ import { MeModule } from './modules/me/me.module'
     HealthModule,
     AuthModule,
     MeModule,
+    UsersModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}

@@ -29,13 +29,13 @@ const router = createRouter({
         {
           path: 'dashboard',
           name: 'dashboard',
-          component: () => import('@/views/DashboardPlaceholderView.vue'),
+          component: () => import('@/views/dashboard/DashboardView.vue'),
           meta: { title: '仪表盘', nav: 'dashboard' },
         },
         {
           path: 'users',
           name: 'users',
-          component: () => import('@/views/UsersPlaceholderView.vue'),
+          component: () => import('@/views/users/UsersView.vue'),
           meta: { title: '用户管理', nav: 'users' },
         },
         {

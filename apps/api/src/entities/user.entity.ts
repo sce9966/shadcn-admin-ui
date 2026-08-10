@@ -24,6 +24,8 @@ export type UserStatus = 'active' | 'invited' | 'disabled'
 @Entity('users')
 @Index('uk_users_email', ['email'], { unique: true })
 @Index('idx_users_org', ['organizationId'])
+@Index('idx_users_org_status', ['organizationId', 'status'])
+@Index('idx_users_org_role', ['organizationId', 'role'])
 export class User {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id!: string
@@ -38,8 +40,9 @@ export class User {
   @Column({ type: 'varchar', length: 255 })
   email!: string
 
-  @Column({ name: 'password_hash', type: 'varchar', length: 255 })
-  passwordHash!: string
+  /** invited 用户可为空，直至接受邀请设密。 */
+  @Column({ name: 'password_hash', type: 'varchar', length: 255, nullable: true })
+  passwordHash!: string | null
 
   @Column({ type: 'varchar', length: 64 })
   name!: string
