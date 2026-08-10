@@ -19,7 +19,13 @@ export function setupRouterGuards(router: Router): void {
 
     if (isPublic && hasToken && to.name === 'auth') {
       const redirect = to.query.redirect
-      if (typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('/auth')) {
+      // 仅允许同站相对路径，拒绝 `//…` 协议相对 URL（开放重定向）与回落 /auth
+      if (
+        typeof redirect === 'string' &&
+        redirect.startsWith('/') &&
+        !redirect.startsWith('//') &&
+        !redirect.startsWith('/auth')
+      ) {
         return redirect
       }
       return { name: 'dashboard' }
