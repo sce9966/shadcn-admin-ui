@@ -3,7 +3,7 @@
 > Issue：AIL-40 · 父任务：AIL-32 · 总设：`docs/design/AIL-33.md`  
 > 依赖：Stage 4 全部完成（AIL-37 / AIL-38 / AIL-39）  
 > 仓库设计文件路径：`docs/design/AIL-40.md`  
-> 状态：**待评审**（设计阶段；评审通过且评论 @ 全栈工程师后才执行联调 / 修缺陷 / README 落地）
+> 状态：**已实现交付**（2026-08-10 评审通过并 @ 触发；H2/H3 按默认：提交 `001_init_schema.sql`、不内置 seed）
 
 ---
 
