@@ -25,6 +25,9 @@ export interface AuthUserView {
   role: UserRole
   status: UserStatus
   title: string | null
+  bio: string | null
+  mfaEnabled: boolean
+  idleLogout: boolean
   organization: {
     id: string
     name: string

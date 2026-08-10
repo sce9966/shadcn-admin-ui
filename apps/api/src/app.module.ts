@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { AuthModule } from './modules/auth/auth.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { HealthModule } from './modules/health/health.module'
+import { MeModule } from './modules/me/me.module'
 import { UsersModule } from './modules/users/users.module'
 
 /**
@@ -33,6 +34,7 @@ import { UsersModule } from './modules/users/users.module'
     }),
     HealthModule,
     AuthModule,
+    MeModule,
     UsersModule,
     DashboardModule,
   ],

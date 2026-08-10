@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { RouterView } from 'vue-router'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppTopbar from '@/components/layout/AppTopbar.vue'
@@ -10,9 +10,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { useIdleLogout } from '@/composables/useIdleLogout'
+import { useAuthStore } from '@/stores/auth'
 
 /** 会话已由 `main.ts` 中 `auth.bootstrap()` 完成初始化 */
 const mobileOpen = ref(false)
+const auth = useAuthStore()
+const idleEnabled = computed(() => Boolean(auth.user?.idleLogout))
+useIdleLogout(idleEnabled)
 </script>
 
 <template>
