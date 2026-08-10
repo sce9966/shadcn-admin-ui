@@ -4,7 +4,7 @@
 > 原型基线：`design/users.html`  
 > 总设计依据：`docs/design/AIL-33.md` §4–§5.3、§7、§9；鉴权落地：`docs/design/AIL-35.md`  
 > 仓库设计文件路径：`docs/design/AIL-38.md`  
-> 状态：待评审
+> 状态：评审通过 · 实现中
 
 ---
 
