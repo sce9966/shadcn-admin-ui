@@ -4,7 +4,7 @@
 > 原型基线：`design/settings.html`  
 > 依赖：Stage 3 完成（AIL-35 鉴权 + AIL-36 壳层）  
 > 仓库设计文件路径：`docs/design/AIL-39.md`  
-> 状态：**待评审** · 通过后请评论 @ 全栈工程师再编码
+> 状态：**待评审（已按 2026-08-10 反馈修订 H3/H7）** · 通过后请评论 @ 全栈工程师再编码
 
 ---
 
@@ -18,7 +18,7 @@ Stage 3 已落地：JWT + Session、`User` / `Organization` / `Session` 实体�
 
 1. 替换设置占位页，UI / 交互对齐 `design/settings.html`（分区导航、资料表单、通知开关、安全区含改密与会话）。
 2. 落地 `/api/me/*` 读写能力：资料更新、通知偏好持久化、安全开关、改密、活动会话列表与撤销。
-3. 与现有鉴权闭环衔接：改密吊销其他会话；撤销非当前会话立即生效；资料变更后刷新顶栏用户菜单展示。
+3. 与现有鉴权闭环衔接：改密吊销全部会话并强制重新登录；撤销非当前会话立即生效；资料变更后刷新顶栏用户菜单展示。
 
 ---
 
@@ -52,11 +52,11 @@ Stage 3 已落地：JWT + Session、`User` / `Organization` / `Session` 实体�
 |---|---|---|
 | H1 | 通知偏好用独立表 `user_preferences`（对齐总设），首次 `GET` 时若不存在则按默认值懒创建 | **采用** |
 | H2 | 邮箱变更仍受**全局唯一**约束（AIL-35）；冲突返回 409「该邮箱已被注册」 | **采用** |
-| H3 | 改密成功后：**吊销该用户除当前 jti 外的全部未吊销会话**；当前会话保持登录；Toast：「密码已更新，其他会话将在下次请求时失效」 | **采用** |
-| H4 | 不可撤销当前会话：`DELETE` 当前 session → 400「不能撤销当前会话」 | **采用**（对齐总设） |
+| H3 | 改密成功后：**吊销该用户全部未吊销会话（含当前）**；前端清 token 并跳转 `/auth` 强制重新登录；Toast：「密码已更新，请重新登录」 | **已确认**（2026-08-10） |
+| H4 | 不可撤销当前会话：`DELETE` 当前 session → 400「不能撤销当前会话」 | **采用**（对齐总设；与改密「吊销全部」不冲突——主动撤销列表仍禁撤当前） |
 | H5 | 分区用 query `?tab=profile\|notify\|security`，缺省 `profile`；刷新可恢复 | **采用** |
 | H6 | `GET /api/auth/me` 扩展返回 `bio`、`mfaEnabled`、`idleLogout`，避免再开 profile GET | **采用** |
-| H7 | 会话列表项展示：解析 UA → `Chrome · Windows` 等；无城市信息时不伪造城市；`ip` 有则展示 | **采用** |
+| H7 | 会话列表项展示：仅 `浏览器 · 系统` + IP；**不展示城市** | **已确认**（2026-08-10） |
 
 ---
 
@@ -188,12 +188,13 @@ User 1──1 UserPreference        （新增）
 | 409 | 「该邮箱已被注册」 |
 | 401 | 未登录 / 会话已吊销（既有守卫） |
 
-### 4.6 改密副作用
+### 4.6 改密副作用（强制重新登录）
 
 1. 校验当前密码与新密码规则。
 2. 更新 `password_hash`。
-3. `UPDATE sessions SET revoked_at = NOW() WHERE user_id = ? AND token_jti <> :currentJti AND revoked_at IS NULL`。
-4. 返回成功；前端清空密码表单 + Toast。
+3. `UPDATE sessions SET revoked_at = NOW() WHERE user_id = ? AND revoked_at IS NULL`（**含当前 jti**）。
+4. 返回 `{ ok: true }`。
+5. 前端：Toast「密码已更新，请重新登录」→ 清除 `novaops_access_token`（local/sessionStorage）与 auth store → 跳转 `/auth`（可不调用 logout API，会话已全部吊销）。
 
 ---
 
@@ -230,7 +231,7 @@ settings-layout：左 220px 分区导航 | 右 panel
 | 保存通知 | PATCH preferences → Toast 汇总已开启项（文案对齐原型脚本） |
 | MFA 开关 | 即时 PATCH security → Toast 演示文案（开启：「请使用身份验证器完成 MFA 绑定（演示）」） |
 | 空闲退出开关 | 即时 PATCH security；开启时启动前端 idle 计时（30min），触发 logout |
-| 更新密码 | 校验 → POST password → 重置表单 → Toast |
+| 更新密码 | 校验 → POST password → Toast「密码已更新，请重新登录」→ 清 token → `/auth` |
 | 撤销会话 | DELETE → 移除列表项 → Toast「已撤销该会话」；当前行展示 Badge「当前」，无撤销按钮 |
 
 ### 5.4 加载与错误
@@ -258,7 +259,7 @@ settings-layout：左 220px 分区导航 | 右 panel
   → Toast 反馈；顶栏名邮同步
 ```
 
-改密后其他设备：下次请求因 jti 已吊销 → 401 → 前端跳转 `/auth`（沿用现有 http 拦截器行为）。
+改密后：当前端与其他设备会话均立即失效；当前端主动跳转 `/auth`；其他设备下次请求 401 → 跳转 `/auth`（沿用 http 拦截器）。
 
 ---
 
@@ -284,10 +285,10 @@ settings-layout：左 220px 分区导航 | 右 panel
 | 与 AIL-38 并行改 User | 本 issue 只写本人资料字段与 preferences；避免改邀请/status API |
 | 通知无真实投递导致「假持久化」误解 | 设计与 README（AIL-40）标明：开关入库，不发信 |
 
-**待评审确认（最多 2 问）：**
+**已确认（2026-08-10 [@Sce huang](mention://member/11a6f825-72c8-4e6b-abe3-97cc84589529)）：**
 
-1. 改密后是否同意 **仅吊销其他会话、保留当前登录**（H3）？若需「改密后强制重新登录」，实现改为吊销全部会话并清前端 token。
-2. 会话展示是否接受 **不显示城市**（H7），仅 `浏览器 · 系统` + IP？
+1. H3：改密后强制重新登录（吊销全部会话 + 清 token + `/auth`）。
+2. H7：会话展示仅 `浏览器 · 系统` + IP，不展示城市。
 
 ---
 
@@ -296,8 +297,8 @@ settings-layout：左 220px 分区导航 | 右 panel
 - [ ] `/settings` 三分区切换与原型一致；`?tab=` 可深链
 - [ ] 资料保存成功有 Toast，校验失败标红；顶栏用户信息更新
 - [ ] 通知三开关可 PATCH 持久化，刷新后保持
-- [ ] 安全区：MFA / 空闲退出可持久化；改密可用且其他会话失效
-- [ ] 活动会话列表可展示当前与非当前；非当前可撤销，当前不可撤
+- [ ] 安全区：MFA / 空闲退出可持久化；改密成功后强制重新登录（全部会话失效）
+- [ ] 活动会话列表展示 `浏览器 · 系统` + IP；非当前可撤销，当前不可撤
 - [ ] 无明文密码入库；无密钥提交
 - [ ] UI 关键结构对齐 `design/settings.html`（分区导航 + 三 panel）
 
