@@ -29,7 +29,7 @@ const router = createRouter({
         {
           path: 'dashboard',
           name: 'dashboard',
-          component: () => import('@/views/DashboardPlaceholderView.vue'),
+          component: () => import('@/views/dashboard/DashboardView.vue'),
           meta: { title: '仪表盘', nav: 'dashboard' },
         },
         {

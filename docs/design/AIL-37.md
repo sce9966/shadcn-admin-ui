@@ -5,7 +5,7 @@
 > 总设计依据：`docs/design/AIL-33.md`（§5.5 Dashboard）  
 > 依赖：AIL-35（鉴权）已完成 · AIL-36（壳层）已完成  
 > 仓库设计文件路径：`docs/design/AIL-37.md`  
-> 状态：待评审（设计阶段 · 未编码）
+> 状态：评审通过 · 已实现（H2/H4：activities 不建表、KPI 全 mock）
 
 ---
 
